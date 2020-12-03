@@ -24,7 +24,6 @@ int stepMarker(mrk_t *, float *);
 #pragma omp end declare target
 
 int stepMarker(mrk_t *marker, float *grid){
-  int currentPlace;
   marker->location = (int) pcg32_boundedrand_r( &(marker->rng), GRID_SIZE);
   marker->integral += grid[marker->location];
   return 0;
@@ -35,6 +34,7 @@ int initField(int gridSize, float *grid){
   for(i=0;i<gridSize;i++){
     grid[i] = 1.0;
   }
+  return 0;
 }
 
 
@@ -76,7 +76,16 @@ int main(void){
   #pragma omp target data map(tofrom:markers[0:nMarks]) map(to:grid[0:GRID_SIZE])
   {
 
-    
+
+
+    if ( omp_is_initial_device() ) {
+    	  printf("Running on host.\n");
+         } else {
+          printf("Running on target\n");
+         }
+   
+
+ 
     #pragma omp target teams distribute parallel for   private(i) 
     for(i=0;i<nMarks;i++){
     
