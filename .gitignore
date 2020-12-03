@@ -1,3 +1,6 @@
+parallel_random_walk
+parallel_random_walk.cpu
+
 # Prerequisites
 *.d
 
