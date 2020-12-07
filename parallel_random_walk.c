@@ -26,10 +26,10 @@ int stepMarker(float *markers_integral, int *markers_location, uint64_t *markers
       //stepMarker( &(markers[i]), grid );
       // 
 
-    location = (int) pcg32_boundedrand_r( &(state), &(inc), GRID_SIZE, threshold);
+    //location = (int) pcg32_boundedrand_r( &(state), &(inc), GRID_SIZE, threshold);
 
     //uint32_t threshold = -GRID_SIZE % GRID_SIZE;
-/*
+
     for (;;) {
       //uint32_t r = pcg32_random_r(rng_state, rng_inc);
       uint64_t oldstate = state;
@@ -42,7 +42,7 @@ int stepMarker(float *markers_integral, int *markers_location, uint64_t *markers
         location = r % GRID_SIZE;
         break;
       }
-      */
+      
 
       integral += grid[location];
   }
