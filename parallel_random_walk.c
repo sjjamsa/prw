@@ -20,12 +20,20 @@ typedef struct mrk mrk_t;
 
 
 #pragma omp declare target
-int stepMarker(mrk_t *, float *);
+int stepMarker(mrk_t *markers, float *grid, int i);
 #pragma omp end declare target
 
-int stepMarker(mrk_t *marker, float *grid){
-  marker->location = (int) pcg32_boundedrand_r( &(marker->rng), GRID_SIZE);
-  marker->integral += grid[marker->location];
+int stepMarker(mrk_t *markers, float *grid, int i){
+
+  int location;
+  float integral = markers[i].integral;
+  for(int j=0;j<NSTEPS;j++){
+    //stepMarker( &(markers[i]), grid );
+      location = (int) pcg32_boundedrand_r( &(markers[i].rng), GRID_SIZE);
+      integral += grid[location];
+  }
+  markers[i].location = location;
+  markers[i].integral = integral;
   return 0;
 }
 
@@ -72,6 +80,8 @@ int main(void){
   initMarkers(markers,nMarks);
   initField(GRID_SIZE,grid);
 
+  double start = omp_get_wtime();
+
   /*Move all the data to the target on one go*/
   #pragma omp target data map(tofrom:markers[0:nMarks]) map(to:grid[0:GRID_SIZE])
   {
@@ -83,9 +93,8 @@ int main(void){
          } else {
           printf("Running on target\n");
          }
-   
 
- 
+    double startNoData = omp_get_wtime();
     #pragma omp target teams distribute parallel for   private(i) 
     for(i=0;i<nMarks;i++){
     
@@ -99,13 +108,14 @@ int main(void){
       */
       markers[i].thread = omp_get_thread_num();
       markers[i].team   = omp_get_team_num();
-      int j;
-      for(j=0;j<NSTEPS;j++){
-        stepMarker( &(markers[i]), grid );
-      }
+      stepMarker(markers, grid, i);
+
     }
+    printf("runtime no data transfers %f sec \n", omp_get_wtime() - startNoData);
 
   }
+  printf("runtime with data transfers %f sec \n", omp_get_wtime() - start);
+
 
   
   for (i=0; i<nMarks; i++){
