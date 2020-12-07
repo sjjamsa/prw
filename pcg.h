@@ -57,23 +57,23 @@ extern "C" {
   //     Seed the rng.  Specified in two parts, state initializer and a
   //     sequence selection constant (a.k.a. stream id)
 
-  void pcg32_srandom(uint64_t initstate, uint64_t initseq);
-  void pcg32_srandom_r(pcg32_random_t* rng, uint64_t initstate,
+  //void pcg32_srandom(uint64_t initstate, uint64_t initseq);
+  void pcg32_srandom_r(uint64_t *rng_state, uint64_t *rng_inc, uint64_t initstate,
 		       uint64_t initseq);
 
   // pcg32_random()
   // pcg32_random_r(rng)
   //     Generate a uniformly distributed 32-bit random number
 
-  uint32_t pcg32_random(void);
-  uint32_t pcg32_random_r(pcg32_random_t* rng);
+  //uint32_t pcg32_random(void);
+  uint32_t pcg32_random_r(uint64_t *rng_state, uint64_t *rng_inc);
 
   // pcg32_boundedrand(bound):
   // pcg32_boundedrand_r(rng, bound):
   //     Generate a uniformly distributed number, r, where 0 <= r < bound
 
-  uint32_t pcg32_boundedrand(uint32_t bound);
-  uint32_t pcg32_boundedrand_r(pcg32_random_t* rng, uint32_t bound);
+  //uint32_t pcg32_boundedrand(uint32_t bound);
+  uint32_t pcg32_boundedrand_r(uint64_t *rng_state, uint64_t *rng_inc, uint32_t bound);
 
 #pragma omp end declare target
 

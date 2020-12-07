@@ -45,44 +45,47 @@ static pcg32_random_t pcg32_global = PCG32_INITIALIZER;
 //     Seed the rng.  Specified in two parts, state initializer and a
 //     sequence selection constant (a.k.a. stream id)
 
-void pcg32_srandom_r(pcg32_random_t* rng, uint64_t initstate, uint64_t initseq)
+void pcg32_srandom_r(uint64_t *rng_state, uint64_t *rng_inc, uint64_t initstate, uint64_t initseq)
 {
-  rng->state = 0U;
-  rng->inc = (initseq << 1u) | 1u;
-  pcg32_random_r(rng);
-  rng->state += initstate;
-  pcg32_random_r(rng);
+  *rng_state = 0U;
+  *rng_inc = (initseq << 1u) | 1u;
+  pcg32_random_r(rng_state, rng_inc);
+  *rng_state += initstate;
+  pcg32_random_r(rng_state, rng_inc);
 }
 
+/*
 void pcg32_srandom(uint64_t seed, uint64_t seq)
 {
   pcg32_srandom_r(&pcg32_global, seed, seq);
 }
+*/
 
 // pcg32_random()
 // pcg32_random_r(rng)
 //     Generate a uniformly distributed 32-bit random number
 
-uint32_t pcg32_random_r(pcg32_random_t* rng)
+uint32_t pcg32_random_r(uint64_t *rng_state, uint64_t *rng_inc)
 {
-  uint64_t oldstate = rng->state;
-  rng->state = oldstate * 6364136223846793005ULL + rng->inc;
+  uint64_t oldstate = *rng_state;
+  *rng_state = oldstate * 6364136223846793005ULL + *rng_inc;
   uint32_t xorshifted = ((oldstate >> 18u) ^ oldstate) >> 27u;
   uint32_t rot = oldstate >> 59u;
   return (xorshifted >> rot) | (xorshifted << ((-rot) & 31));
 }
 
+/*
 uint32_t pcg32_random()
 {
   return pcg32_random_r(&pcg32_global);
 }
-
+*/
 
 // pcg32_boundedrand(bound):
 // pcg32_boundedrand_r(rng, bound):
 //     Generate a uniformly distributed number, r, where 0 <= r < bound
 
-uint32_t pcg32_boundedrand_r(pcg32_random_t* rng, uint32_t bound)
+uint32_t pcg32_boundedrand_r(uint64_t *rng_state, uint64_t *rng_inc, uint32_t bound)
 {
   // To avoid bias, we need to make the range of the RNG a multiple of
   // bound, which we do by dropping output less than a threshold.
@@ -108,15 +111,16 @@ uint32_t pcg32_boundedrand_r(pcg32_random_t* rng, uint32_t bound)
   // practice, bounds are typically small and only a tiny amount of the range
   // is eliminated.
   for (;;) {
-    uint32_t r = pcg32_random_r(rng);
+    uint32_t r = pcg32_random_r(rng_state, rng_inc);
     if (r >= threshold)
       return r % bound;
   }
 }
 
-
+/*
 uint32_t pcg32_boundedrand(uint32_t bound)
 {
   return pcg32_boundedrand_r(&pcg32_global, bound);
 }
+*/
 
