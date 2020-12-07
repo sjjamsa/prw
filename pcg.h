@@ -73,7 +73,7 @@ extern "C" {
   //     Generate a uniformly distributed number, r, where 0 <= r < bound
 
   //uint32_t pcg32_boundedrand(uint32_t bound);
-  uint32_t pcg32_boundedrand_r(uint64_t *rng_state, uint64_t *rng_inc, uint32_t bound);
+  uint32_t pcg32_boundedrand_r(uint64_t *rng_state, uint64_t *rng_inc, uint32_t bound, uint32_t threshold);
 
 #pragma omp end declare target
 

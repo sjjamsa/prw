@@ -18,13 +18,37 @@ int stepMarker(float *markers_integral, int *markers_location, uint64_t *markers
 
   int location;
   float integral = markers_integral[i];
+  uint64_t state = markers_rng_state[i];
+  uint64_t inc = markers_rng_inc[i];
+  uint32_t threshold = -GRID_SIZE % GRID_SIZE;
+  
   for(int j=0;j<NSTEPS;j++){
-    //stepMarker( &(markers[i]), grid );
-      location = (int) pcg32_boundedrand_r( &(markers_rng_state[i]), &(markers_rng_inc[i]), GRID_SIZE);
+      //stepMarker( &(markers[i]), grid );
+      // 
+
+    location = (int) pcg32_boundedrand_r( &(state), &(inc), GRID_SIZE, threshold);
+
+    //uint32_t threshold = -GRID_SIZE % GRID_SIZE;
+/*
+    for (;;) {
+      //uint32_t r = pcg32_random_r(rng_state, rng_inc);
+      uint64_t oldstate = state;
+      state = oldstate * 6364136223846793005ULL + inc;
+      uint32_t xorshifted = ((oldstate >> 18u) ^ oldstate) >> 27u;
+      uint32_t rot = oldstate >> 59u;
+      uint32_t r = (int)((xorshifted >> rot) | (xorshifted << ((-rot) & 31)));
+
+      if (r >= threshold)
+        location = r % GRID_SIZE;
+        break;
+      }
+      */
+
       integral += grid[location];
   }
   markers_location[i] = location;
   markers_integral[i] = integral;
+  markers_rng_state[i] = state;
   return 0;
 }
 

@@ -85,7 +85,7 @@ uint32_t pcg32_random()
 // pcg32_boundedrand_r(rng, bound):
 //     Generate a uniformly distributed number, r, where 0 <= r < bound
 
-uint32_t pcg32_boundedrand_r(uint64_t *rng_state, uint64_t *rng_inc, uint32_t bound)
+uint32_t pcg32_boundedrand_r(uint64_t *rng_state, uint64_t *rng_inc, uint32_t bound, uint32_t threshold)
 {
   // To avoid bias, we need to make the range of the RNG a multiple of
   // bound, which we do by dropping output less than a threshold.
@@ -101,7 +101,7 @@ uint32_t pcg32_boundedrand_r(uint64_t *rng_state, uint64_t *rng_inc, uint32_t bo
   // because this version will calculate the same modulus, but the LHS
   // value is less than 2^32.
 
-  uint32_t threshold = -bound % bound;
+  //uint32_t threshold = -bound % bound;
 
   // Uniformity guarantees that this loop will terminate.  In practice, it
   // should usually terminate quickly; on average (assuming all bounds are
