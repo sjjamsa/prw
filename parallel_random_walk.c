@@ -77,26 +77,27 @@ int main(void){
   {
 
 
-
+    /*
     if ( omp_is_initial_device() ) {
-    	  printf("Running on host.\n");
+    	  printf("Running on host (target data map).\n");
          } else {
-          printf("Running on target\n");
+          printf("Running on target (target data map)\n");
          }
    
-
+    */
  
     #pragma omp target teams distribute parallel for   private(i) 
     for(i=0;i<nMarks;i++){
-    
-      /*
-      if ( omp_is_initial_device() ) {
-	printf("Host\n");
+
+      if(i==0){
+	if ( omp_is_initial_device() ) {
+	  printf("Running on host (ottdpf)\n");
+	}
+	else {
+	  printf("Running on arget (ottdpf)\n");
+	}
       }
-      else {
-	printf("Target\n");
-      }
-      */
+
       markers[i].thread = omp_get_thread_num();
       markers[i].team   = omp_get_team_num();
       int j;
