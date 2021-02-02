@@ -86,7 +86,7 @@ int main(void){
    
     */
  
-    #pragma omp target teams distribute parallel for   private(i) 
+    #pragma omp target teams distribute parallel for   /* private(i)  */
     for(i=0;i<nMarks;i++){
 
       if(i==0){
@@ -109,8 +109,8 @@ int main(void){
   }
 
   
-  for (i=0; i<nMarks; i++){
-    //printMarker(markers[i]);
+  for (i=0; i<nMarks; i+=19331){
+    printMarker(markers[i]);
 
   }
 
