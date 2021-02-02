@@ -87,12 +87,14 @@ int main(void){
   #pragma omp target data map(tofrom:markers[0:nMarks]) map(to:grid[0:GRID_SIZE]) map(tofrom:nFinished[0:1])
   {
 
-
+    /*
     if ( omp_is_initial_device() ) {
-    	  printf("Running on host.\n");
-    } else {
-          printf("Running on target\n");
-    }
+    	  printf("Running on host (target data map).\n");
+         } else {
+          printf("Running on target (target data map)\n");
+         }
+   
+    */
 
 
     #pragma omp atomic write
@@ -100,15 +102,16 @@ int main(void){
  
     #pragma omp target teams distribute parallel for  /* shared(nFinished) */
     for(i=0;i<nMarks;i++){
-    
-      /*
-      if ( omp_is_initial_device() ) {
-	printf("Host\n");
+
+      if(i==0){
+	if ( omp_is_initial_device() ) {
+	  printf("Running on host (ottdpf)\n");
+	}
+	else {
+	  printf("Running on arget (ottdpf)\n");
+	}
       }
-      else {
-	printf("Target\n");
-      }
-      */
+
       markers[i].thread = omp_get_thread_num();
       markers[i].team   = omp_get_team_num();
       int j;
@@ -125,8 +128,8 @@ int main(void){
 
   printf("Finished %d/%d markers.\n",*nFinished,nMarks);
   
-  for (i=0; i<nMarks; i++){
-    //printMarker(markers[i]);
+  for (i=0; i<nMarks; i+=19331){
+    printMarker(markers[i]);
 
   }
 
