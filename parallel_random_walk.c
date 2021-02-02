@@ -97,10 +97,13 @@ int main(void){
     */
 
 
+    #pragma omp target
+    {
     #pragma omp atomic write
     (*nFinished) = 0;   /* Test the atomic save.*/
+    }
  
-    #pragma omp target teams distribute parallel for  /* shared(nFinished) */
+    #pragma omp target teams distribute parallel for  shared(nFinished) 
     for(i=0;i<nMarks;i++){
 
       if(i==0){
