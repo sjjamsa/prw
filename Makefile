@@ -1,20 +1,22 @@
 
-CFLAGS_GPU_GCC=-fno-stack-protector -foffload=nvptx-none="-misa=sm_35" -fopenmp -Minfo
+CFLAGS_GPU_GCC=-fno-stack-protector -foffload=nvptx-none="-misa=sm_35" -fopenmp 
 CFLAGS_GPU_NVC=-mp -target=gpu -gpu=cc35 -fopenmp -Minfo
+CFLAGS_CPU_CLANG=-fopenmp=libiomp5
 
 CFLAGS_CPU_GCC=-fno-stack-protector -fopenmp -foffload=disable
 CFLAGS_CPU_NVC=-fopenmp
+CFLAGS_GPU_CLANG=-fopenmp=libiomp5 -fopenmp-targets=nvptx64-nvidia-cuda  -Xopenmp-target -march=$(GPU_ARCH)
 
+#K80
+GPU_ARCH=sm_37 
 #P100  
-GPU_ARCH=sm_60 
+#GPU_ARCH=sm_60 
 #V100
 #GPU_ARCH=sm_70 
-CFLAGS_GPU_CLANG=-fopenmp=libiomp5 -fopenmp-targets=nvptx64-nvidia-cuda  -Xopenmp-target -march=$(GPU_ARCH)
-CFLAGS_CPU_CLANG=-fopenmp=libiomp5
 
 
 # module load gcc/9.2.0-cuda-nvptx
-CC=gcc
+#CC=gcc
 
 #CC=nvc
 
@@ -37,8 +39,8 @@ endif
 
 
 runWalkBoth : parallel_random_walk parallel_random_walk.cpu
-	./parallel_random_walk.cpu
-	./parallel_random_walk
+	time ./parallel_random_walk
+	time ./parallel_random_walk.cpu
 
 runWalk : parallel_random_walk 
 	time ./parallel_random_walk
