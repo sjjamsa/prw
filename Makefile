@@ -1,3 +1,4 @@
+SHELL := /bin/bash
 
 CFLAGS_GPU_GCC=-fno-stack-protector -foffload=nvptx-none="-misa=sm_35" -fopenmp 
 CFLAGS_GPU_NVC=-mp -target=gpu -gpu=cc35 -fopenmp -Minfo
