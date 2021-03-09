@@ -94,7 +94,7 @@ int main(void){
 	  printf("Running on host (ottdpf)\n");
 	}
 	else {
-	  printf("Running on arget (ottdpf)\n");
+	  printf("Running on target (ottdpf)\n");
 	}
       }
 
