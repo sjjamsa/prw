@@ -37,7 +37,7 @@
 
 // Global ones are probably not thread-safe...
 #pragma omp declare target
-static pcg32_random_t pcg32_global = PCG32_INITIALIZER;
+pcg32_random_t pcg32_global = PCG32_INITIALIZER;
 #pragma omp end declare target
 
 // pcg32_srandom(initstate, initseq)
