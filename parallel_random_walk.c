@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <omp.h>
 #include <math.h>
+#include <time.h>
 
 #include "pcg.h"
  
@@ -82,6 +83,7 @@ int main( int argc, char *argv[] ){
 
   int maxTeam,maxThread;
 
+  clock_t begin,end;
 
   int *nFinished; /* This variable is here to test atomic/critical pragmas */
   int N;
@@ -110,9 +112,10 @@ int main( int argc, char *argv[] ){
   *nFinished = -1; /* Just mark this with something non-default*/
   printf("Finished %d/%d markers.\n",*nFinished,nMarks);
 
+  begin = clock();
 
   /*Move all the data to the target on one go*/
-
+  
   #pragma omp target data map(tofrom:markers[0:nMarks]) map(to:grid[0:gridsize]) map(tofrom:nFinished[0:1])
   {
 
@@ -161,7 +164,11 @@ int main( int argc, char *argv[] ){
     /* printf("** i=----- ready=%5d **\n",*nFinished); */
   }
 
+  end = clock();
+    
   printf("Finished %d/%d markers.\n",*nFinished,nMarks);
+
+  printf("Wall clock time: %lfs\n",  (double)(end - begin) / CLOCKS_PER_SEC ); 
   
   for (i=0; i<nMarks; i+=19331){
     printMarker(markers[i]);
