@@ -20,11 +20,11 @@ typedef struct mrk mrk_t;
 
 
 #pragma omp declare target
-int stepMarker(mrk_t *, float *);
+int stepMarker(mrk_t *, float *, int);
 #pragma omp end declare target
 
-int stepMarker(mrk_t *marker, float *grid){
-  marker->location = (int) pcg32_boundedrand_r( &(marker->rng), GRID_SIZE);
+int stepMarker(mrk_t *marker, float *grid, int gridsize){
+  marker->location = (int) pcg32_boundedrand_r( &(marker->rng), gridsize);
   marker->integral += grid[marker->location];
   return 0;
 }
@@ -59,23 +59,36 @@ int printMarker(mrk_t marker){
 
 
 
-int main(void){
+int main( int argc, char *argv[] ){
 
   int i;
   mrk_t *markers;
   const int nMarks = NMARKERS;
   float *grid;
+  int gridsize;
 
   int *nFinished; /* This variable is here to test atomic/critical pragmas */
   int N;
 
+  /* Get the gridsize as input */
+  if(argc >= 2 ){
+    gridsize = atoi(argv[1]);
+    if(gridsize <= 0){
+      printf("Interpreting '%s' as %d, which is not reasonable gridsize.\n", argv[1], gridsize);
+      return 1;
+    }
+  } else {
+    gridsize = GRID_SIZE;
+  }
 
+  printf("Gridsize set to %d.\n",gridsize);
+  
   markers = (mrk_t *) malloc( nMarks * sizeof(mrk_t));
-  grid    = (float *) malloc( GRID_SIZE * sizeof(float));
+  grid    = (float *) malloc( gridsize * sizeof(float));
  
 
   initMarkers(markers,nMarks);
-  initField(GRID_SIZE,grid);
+  initField(gridsize,grid);
 
   nFinished = &N;
   *nFinished = -1; /* Just mark this with something non-default*/
@@ -84,7 +97,7 @@ int main(void){
 
   /*Move all the data to the target on one go*/
 
-  #pragma omp target data map(tofrom:markers[0:nMarks]) map(to:grid[0:GRID_SIZE]) map(tofrom:nFinished[0:1])
+  #pragma omp target data map(tofrom:markers[0:nMarks]) map(to:grid[0:gridsize]) map(tofrom:nFinished[0:1])
   {
 
     /*
@@ -119,8 +132,7 @@ int main(void){
       markers[i].team   = omp_get_team_num();
       int j;
       for(j=0;j<NSTEPS;j++){
-        stepMarker( &(markers[i]), grid );
-
+        stepMarker( &(markers[i]), grid, gridsize );
       }
     #pragma omp atomic update
       (*nFinished)++;
