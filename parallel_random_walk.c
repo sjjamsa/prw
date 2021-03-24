@@ -1,12 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
+#include <math.h>
 
 #include "pcg.h"
  
 #define GRID_SIZE 10240
 #define NSTEPS    32000
 #define NMARKERS  160000
+
+#define TOLERANCE 0.01
 
 struct mrk{
   int id;
@@ -31,8 +34,10 @@ int stepMarker(mrk_t *marker, float *grid){
 
 int initField(int gridSize, float *grid){
   int i;
+
+  /* Init the field s.t. the average = 1.0  */
   for(i=0;i<gridSize;i++){
-    grid[i] = 1.0;
+    grid[i] = 2.0 *  ( (float) i ) / (  (float) gridSize ) ;
   }
   return 0;
 }
@@ -50,11 +55,19 @@ int initMarkers(mrk_t *markers, int nMarks){
 }
 
 int printMarker(mrk_t marker){
-  printf("M%05d: @%06d by tm%04d:th%04d integral %f\n", 
-	 marker.id,    marker.location, 
-	 marker.team,  marker.thread,
-	 marker.integral);
-  return 0;
+  if ( fabs(marker.integral - 1.000 ) < TOLERANCE ) {
+    printf("M%05d: @%06d by tm%04d:th%04d integral %f\n",
+	   marker.id,    marker.location,
+	   marker.team,  marker.thread,
+	   marker.integral);
+  } else {
+    printf("M%05d: @%06d by tm%04d:th%04d integral %f !!!!!!!!!!!!\n",
+	   marker.id,    marker.location,
+	   marker.team,  marker.thread,
+	   marker.integral);
+
+  }
+    return 0;
 }
 
 
@@ -70,9 +83,11 @@ int main(void){
   int N;
 
 
+  printf("Gridsize set to %d.\n",gridsize);
+
   markers = (mrk_t *) malloc( nMarks * sizeof(mrk_t));
-  grid    = (float *) malloc( GRID_SIZE * sizeof(float));
- 
+  grid    = (float *) malloc( gridsize * sizeof(float));
+
 
   initMarkers(markers,nMarks);
   initField(GRID_SIZE,grid);
@@ -122,6 +137,10 @@ int main(void){
         stepMarker( &(markers[i]), grid );
 
       }
+
+      /* Scale the integral by number of steps */
+      markers[i].integral /= (float)NSTEPS;
+
     #pragma omp atomic update
       (*nFinished)++;
       /* printf("i=%5d ready=%5d\n",i,*nFinished); */
