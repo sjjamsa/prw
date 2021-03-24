@@ -80,6 +80,9 @@ int main( int argc, char *argv[] ){
   float *grid;
   int gridsize;
 
+  int maxTeam,maxThread;
+
+
   int *nFinished; /* This variable is here to test atomic/critical pragmas */
   int N;
 
@@ -162,8 +165,16 @@ int main( int argc, char *argv[] ){
   
   for (i=0; i<nMarks; i+=19331){
     printMarker(markers[i]);
-
   }
 
+  maxThread = -1;
+  maxTeam = -1;
+  for (i=0; i<nMarks; i++){
+    if ( markers[i].team   > maxTeam  ) maxTeam   =  markers[i].team;
+    if ( markers[i].thread > maxThread) maxThread =  markers[i].thread;
+  }
 
+  printf("Teams %d Threads %d\n", maxTeam+1, maxThread+1);
+
+  return 0;
 }
