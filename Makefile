@@ -11,18 +11,22 @@ LLVM_DIR=/opt/rocm/llvm
 LIB_OMP_DIR=$(LLVM_DIR)/lib/
 #CC=$(LLVM_DIR)/bin/clang
 
+#for A100
+CFLAGS_GPU_NVC=-mp=gpu -target=gpu -gpu=cc80 -fopenmp -Minfo -O3
+CFLAGS_CPU_NVC=-fopenmp -O3
+
+
+
 
 
 
 
 #For Nvidia on triton
 CFLAGS_GPU_GCC=-fno-stack-protector -foffload=nvptx-none="-misa=sm_35" -fopenmp -O3
-CFLAGS_GPU_NVC=-mp -target=gpu -gpu=cc35 -fopenmp -Minfo
 CFLAGS_CPU_CLANG=-fopenmp=libiomp5
 
 CFLAGS_CPU_GCC=-fno-stack-protector -fopenmp -foffload=disable  -O3
 #CFLAGS_CPU_GCC=-fno-stack-protector -O3
-CFLAGS_CPU_NVC=-fopenmp
 CFLAGS_GPU_CLANG=-fopenmp=libiomp5 -fopenmp-targets=nvptx64-nvidia-cuda  -Xopenmp-target -march=$(GPU_ARCH)
 
 #K80
@@ -31,17 +35,19 @@ CFLAGS_GPU_CLANG=-fopenmp=libiomp5 -fopenmp-targets=nvptx64-nvidia-cuda  -Xopenm
 GPU_ARCH=sm_60 
 #V100
 #GPU_ARCH=sm_70 
+#A100
+#GPU_ARCH=sm_80 
 
 
 # on triton
 # module load gcc/9.2.0-cuda-nvptx
 #CC=gcc
 
-#CC=nvc
+CC=/opt/nvidia/hpc_sdk/Linux_x86_64/21.2/compilers/bin/nvc
 
 # on triton
 # module purge; module load llvm/11.0.1-cuda-python3 
-CC=clang
+#CC=clang
 
 
 
@@ -57,10 +63,11 @@ ifeq ($(CC),gcc)
 	CFLAGS_GPU=$(CFLAGS_GPU_GCC)
 	CFLAGS_CPU=$(CFLAGS_CPU_GCC)
 endif
-ifeq ($(CC),nvcc)
-	CFLAGS_GPU=$(CFLAGS_GPU_NVCC)
-	CFLAGS_CPU=$(CFLAGS_CPU_NVCC)
+ifeq ($(notdir $(CC)),nvc)
+	CFLAGS_GPU=$(CFLAGS_GPU_NVC)
+	CFLAGS_CPU=$(CFLAGS_CPU_NVC)
 endif
+
 
 
 runWalkBoth : parallel_random_walk parallel_random_walk.cpu
@@ -98,3 +105,7 @@ scalingTest: parallel_random_walk parallel_random_walk.cpu
 	time ./parallel_random_walk.cpu 10240000 > cpu.10240000.txt  
 	time ./parallel_random_walk     102400000 > gpu.102400000.txt 
 	time ./parallel_random_walk.cpu 102400000 > cpu.102400000.txt  
+
+
+clean:
+	rm -vf *.o parallel_random_walk parallel_random_walk.cpu
