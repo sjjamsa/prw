@@ -1,6 +1,8 @@
 parallel_random_walk
 parallel_random_walk.cpu
 
+?pu.1024*.txt
+
 # Prerequisites
 *.d
 
