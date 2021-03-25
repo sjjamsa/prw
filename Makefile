@@ -1,42 +1,22 @@
 SHELL := /bin/bash
 
-CFLAGS_GPU_GCC=-fno-stack-protector -foffload=nvptx-none="-misa=sm_35" -fopenmp 
-CFLAGS_GPU_NVC=-mp -target=gpu -gpu=cc35 -fopenmp -Minfo
-CFLAGS_CPU_CLANG=-fopenmp=libiomp5
+CFLAGS_CPU_CLANG=-O3 -fopenmp=libiomp5 -L/opt/rocm/llvm/lib/ -Wl,-rpath,$(LIB_OMP_DIR)
+CFLAGS_GPU_CLANG=-O3 -target $(AOMP_CPUTARGET) -fopenmp -fopenmp-version=50 -fopenmp-targets=$(AOMP_GPUTARGET) -Xopenmp-target=$(AOMP_GPUTARGET) -march=$(AOMP_GPU) -Wall
 
-CFLAGS_CPU_GCC=-fno-stack-protector -fopenmp -foffload=disable
-CFLAGS_CPU_NVC=-fopenmp
-CFLAGS_GPU_CLANG=-fopenmp=libiomp5 -fopenmp-targets=nvptx64-nvidia-cuda  -Xopenmp-target -march=$(GPU_ARCH)
-
-#K80
-GPU_ARCH=sm_37 
-#P100  
-#GPU_ARCH=sm_60 
-#V100
-#GPU_ARCH=sm_70 
+AOMP_GPUTARGET=amdgcn-amd-amdhsa
+AOMP_CPUTARGET=x86_64-pc-linux-gnu
+AOMP_GPU=gfx908
 
 
-# module load gcc/9.2.0-cuda-nvptx
-#CC=gcc
+LLVM_DIR=/opt/rocm/llvm
 
-#CC=nvc
+LIB_OMP_DIR=$(LLVM_DIR)/lib/
 
-# module use /share/apps/spack/envs/fgci-centos7-haswell-dev/lmod/linux-centos7-x86_64/all
-# module --ignore-cache purge; module --ignore-cache load llvm/11.0.1-cuda-python3-gcc-6.5.0 
-CC=clang
+CC=$(LLVM_DIR)/bin/clang
+#CC=clang-ocl
 
-ifeq ($(CC),clang)
-	CFLAGS_GPU=$(CFLAGS_GPU_CLANG)
-	CFLAGS_CPU=$(CFLAGS_CPU_CLANG)
-endif
-ifeq ($(CC),gcc)
-	CFLAGS_GPU=$(CFLAGS_GPU_GCC)
-	CFLAGS_CPU=$(CFLAGS_CPU_GCC)
-endif
-ifeq ($(CC),nvcc)
-	CFLAGS_GPU=$(CFLAGS_GPU_NVCC)
-	CFLAGS_CPU=$(CFLAGS_CPU_NVCC)
-endif
+CFLAGS_GPU=$(CFLAGS_GPU_CLANG)
+CFLAGS_CPU=$(CFLAGS_CPU_CLANG)
 
 
 runWalkBoth : parallel_random_walk parallel_random_walk.cpu
@@ -49,10 +29,28 @@ runWalk : parallel_random_walk
 runWalk.cpu : parallel_random_walk.cpu 
 	time ./parallel_random_walk.cpu
 
-parallel_random_walk     : parallel_random_walk.c pcg.c pcg.h Makefile
-	$(CC) -o $@ parallel_random_walk.c pcg.c  $(CFLAGS_GPU)
+%.o : %.c
+	$(CC) -c -o $@ $<  $(CFLAGS_GPU)
+
+parallel_random_walk.o pcg.o : pcg.h Makefile
+
+parallel_random_walk     : parallel_random_walk.o pcg.o 
+	$(CC) -o $@ $^  $(CFLAGS_GPU)
 
 parallel_random_walk.cpu : parallel_random_walk.c pcg.c pcg.h Makefile
 	$(CC) -o $@ parallel_random_walk.c pcg.c  $(CFLAGS_CPU)
 
 
+scalingTest: parallel_random_walk parallel_random_walk.cpu
+	time ./parallel_random_walk     1024     > gpu.1024.txt     
+	time ./parallel_random_walk.cpu 1024     > cpu.1024.txt  
+	time ./parallel_random_walk     10240    > gpu.10240.txt    
+	time ./parallel_random_walk.cpu 10240    > cpu.10240.txt  
+	time ./parallel_random_walk     102400   > gpu.102400.txt   
+	time ./parallel_random_walk.cpu 102400   > cpu.102400.txt  
+	time ./parallel_random_walk     1024000  > gpu.1024000.txt  
+	time ./parallel_random_walk.cpu 1024000  > cpu.1024000.txt  
+	time ./parallel_random_walk     10240000 > gpu.10240000.txt 
+	time ./parallel_random_walk.cpu 10240000 > cpu.10240000.txt  
+	time ./parallel_random_walk     102400000 > gpu.102400000.txt 
+	time ./parallel_random_walk.cpu 102400000 > cpu.102400000.txt  
