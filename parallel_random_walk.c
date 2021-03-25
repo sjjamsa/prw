@@ -58,12 +58,17 @@ int printMarker(mrk_t marker){
 }
 
 
+
 int main(void){
 
   int i;
   mrk_t *markers;
   const int nMarks = NMARKERS;
   float *grid;
+
+  int *nFinished; /* This variable is here to test atomic/critical pragmas */
+  int N;
+
 
   markers = (mrk_t *) malloc( nMarks * sizeof(mrk_t));
   grid    = (float *) malloc( GRID_SIZE * sizeof(float));
@@ -72,10 +77,15 @@ int main(void){
   initMarkers(markers,nMarks);
   initField(GRID_SIZE,grid);
 
-  /*Move all the data to the target on one go*/
-  #pragma omp target data map(tofrom:markers[0:nMarks]) map(to:grid[0:GRID_SIZE])
-  {
+  nFinished = &N;
+  *nFinished = -1; /* Just mark this with something non-default*/
+  printf("Finished %d/%d markers.\n",*nFinished,nMarks);
 
+
+  /*Move all the data to the target on one go*/
+
+  #pragma omp target data map(tofrom:markers[0:nMarks]) map(to:grid[0:GRID_SIZE]) map(tofrom:nFinished[0:1])
+  {
 
     /*
     if ( omp_is_initial_device() ) {
@@ -85,8 +95,15 @@ int main(void){
          }
    
     */
+
+
+    #pragma omp target
+    {
+    #pragma omp atomic write
+    (*nFinished) = 0;   /* Test the atomic save.*/
+    }
  
-    #pragma omp target teams distribute parallel for   /* private(i)  */
+    #pragma omp target teams distribute parallel for  shared(nFinished) 
     for(i=0;i<nMarks;i++){
 
       if(i==0){
@@ -103,11 +120,16 @@ int main(void){
       int j;
       for(j=0;j<NSTEPS;j++){
         stepMarker( &(markers[i]), grid );
-      }
-    }
 
+      }
+    #pragma omp atomic update
+      (*nFinished)++;
+      /* printf("i=%5d ready=%5d\n",i,*nFinished); */
+    }
+    /* printf("** i=----- ready=%5d **\n",*nFinished); */
   }
 
+  printf("Finished %d/%d markers.\n",*nFinished,nMarks);
   
   for (i=0; i<nMarks; i+=19331){
     printMarker(markers[i]);
