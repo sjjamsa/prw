@@ -99,7 +99,7 @@ int main( int argc, char *argv[] ){
     gridsize = GRID_SIZE;
   }
 
-  printf("Markers %d Steps %d Gridsize %d.\n", nMarks, gridsize, NSTEPS);
+  printf("Markers %d Steps %d Gridsize %d.\n", nMarks, NSTEPS, gridsize );
 
   markers = (mrk_t *) malloc( nMarks * sizeof(mrk_t));
   grid    = (float *) malloc( gridsize * sizeof(float));
