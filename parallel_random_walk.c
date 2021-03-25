@@ -7,8 +7,8 @@
 #include "pcg.h"
  
 #define GRID_SIZE 10240
-#define NSTEPS    32000
-#define NMARKERS  160000
+#define NSTEPS    320000
+#define NMARKERS  1000000
 
 #define TOLERANCE 0.01
 
@@ -144,7 +144,7 @@ int main( int argc, char *argv[] ){
 	  printf("Running on host (ottdpf)\n");
 	}
 	else {
-	  printf("Running on arget (ottdpf)\n");
+	  printf("Running on target (ottdpf)\n");
 	}
       }
 
