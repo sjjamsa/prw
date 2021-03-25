@@ -83,7 +83,7 @@ int main( int argc, char *argv[] ){
 
   int maxTeam,maxThread;
 
-  clock_t begin,end;
+  struct timespec  wc_begin,wc_end,cpu_begin,cpu_end;
 
   int *nFinished; /* This variable is here to test atomic/critical pragmas */
   int N;
@@ -112,7 +112,8 @@ int main( int argc, char *argv[] ){
   *nFinished = -1; /* Just mark this with something non-default*/
   printf("Finished %d/%d markers.\n",*nFinished,nMarks);
 
-  begin = clock();
+  clock_gettime( CLOCK_REALTIME,           &wc_begin  );
+  clock_gettime( CLOCK_PROCESS_CPUTIME_ID, &cpu_begin );
 
   /*Move all the data to the target on one go*/
   
@@ -164,11 +165,13 @@ int main( int argc, char *argv[] ){
     /* printf("** i=----- ready=%5d **\n",*nFinished); */
   }
 
-  end = clock();
+  clock_gettime( CLOCK_REALTIME,           &wc_end  );
+  clock_gettime( CLOCK_PROCESS_CPUTIME_ID, &cpu_end );
     
   printf("Finished %d/%d markers.\n",*nFinished,nMarks);
 
-  printf("Wall clock time: %lfs\n",  (double)(end - begin) / CLOCKS_PER_SEC ); 
+  printf("Wall clock time: %lf s\n",  (double) ( wc_end.tv_sec- wc_begin.tv_sec) + ((double) ( wc_end.tv_nsec- wc_begin.tv_nsec ))*1.0e-9 ); 
+  printf("       CPU time: %lf s\n",  (double) (cpu_end.tv_sec-cpu_begin.tv_sec) + ((double) (cpu_end.tv_nsec-cpu_begin.tv_nsec ))*1.0e-9 ); 
   
   for (i=0; i<nMarks; i+=19331){
     printMarker(markers[i]);
