@@ -16,6 +16,7 @@ struct mrk{
   int id;
   int thread;
   int team;
+  int stopAt;
   pcg32_random_t rng;
   int location;
   float integral;
@@ -50,6 +51,7 @@ int initMarkers(mrk_t *markers, int nMarks){
     pcg32_srandom_r( &(markers[i].rng),  0x853c49e6748fea9bULL, i);
     markers[i].id=i;
     markers[i].integral=0;
+    markers[i].stopAt = NSTEPS;
   }
 
   return 0;
@@ -151,7 +153,7 @@ int main( int argc, char *argv[] ){
       markers[i].thread = omp_get_thread_num();
       markers[i].team   = omp_get_team_num();
       int j;
-      for(j=0;j<NSTEPS;j++){
+      for(j=0;j<markers[i].stopAt;j++){
         stepMarker( &(markers[i]), grid, gridsize );
       }
 
