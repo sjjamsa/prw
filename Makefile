@@ -86,15 +86,15 @@ parallel_random_walk.cpu : parallel_random_walk.c pcg.c pcg.h Makefile
 
 
 scalingTest: parallel_random_walk parallel_random_walk.cpu
-	time ./parallel_random_walk     1024     > gpu.1024.txt     
-	time ./parallel_random_walk.cpu 1024     > cpu.1024.txt  
-	time ./parallel_random_walk     10240    > gpu.10240.txt    
-	time ./parallel_random_walk.cpu 10240    > cpu.10240.txt  
-	time ./parallel_random_walk     102400   > gpu.102400.txt   
-	time ./parallel_random_walk.cpu 102400   > cpu.102400.txt  
-	time ./parallel_random_walk     1024000  > gpu.1024000.txt  
-	time ./parallel_random_walk.cpu 1024000  > cpu.1024000.txt  
-	time ./parallel_random_walk     10240000 > gpu.10240000.txt 
-	time ./parallel_random_walk.cpu 10240000 > cpu.10240000.txt  
-	time ./parallel_random_walk     102400000 > gpu.102400000.txt 
-	time ./parallel_random_walk.cpu 102400000 > cpu.102400000.txt  
+	time ./parallel_random_walk     1024      320000 80000 > gpu.1024.txt
+	time ./parallel_random_walk.cpu 1024      320000 80000 > cpu.1024.txt
+	time ./parallel_random_walk     10240     320000 80000 > gpu.10240.txt
+	time ./parallel_random_walk.cpu 10240     320000 80000 > cpu.10240.txt
+	time ./parallel_random_walk     102400    320000 80000 > gpu.102400.txt
+	time ./parallel_random_walk.cpu 102400    320000 80000 > cpu.102400.txt
+	time ./parallel_random_walk     1024000   320000 80000 > gpu.1024000.txt
+	time ./parallel_random_walk.cpu 1024000   320000 80000 > cpu.1024000.txt
+	time ./parallel_random_walk     10240000  320000 80000 > gpu.10240000.txt
+	time ./parallel_random_walk.cpu 10240000  320000 80000 > cpu.10240000.txt
+	time ./parallel_random_walk     102400000 320000 80000 > gpu.102400000.txt
+	time ./parallel_random_walk.cpu 102400000 320000 80000 > cpu.102400000.txt
