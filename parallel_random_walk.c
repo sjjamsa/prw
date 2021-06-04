@@ -157,8 +157,8 @@ int main( int argc, char *argv[] ){
   *nFinished = -1; /* Just mark this with something non-default*/
   printf("Finished %d/%d markers.\n",*nFinished,nMarks);
 
-  clock_gettime( CLOCK_REALTIME,           &wc_begin  );
-  clock_gettime( CLOCK_PROCESS_CPUTIME_ID, &cpu_begin );
+  //  clock_gettime( CLOCK_REALTIME,           &wc_begin  );
+  //  clock_gettime( CLOCK_PROCESS_CPUTIME_ID, &cpu_begin );
 
   /*Move all the data to the target on one go*/
   
@@ -210,8 +210,8 @@ int main( int argc, char *argv[] ){
     /* printf("** i=----- ready=%5d **\n",*nFinished); */
   }
 
-  clock_gettime( CLOCK_REALTIME,           &wc_end  );
-  clock_gettime( CLOCK_PROCESS_CPUTIME_ID, &cpu_end );
+  //  clock_gettime( CLOCK_REALTIME,           &wc_end  );
+  //  clock_gettime( CLOCK_PROCESS_CPUTIME_ID, &cpu_end );
     
   printf("Finished %d/%d markers.\n",*nFinished,nMarks);
 
