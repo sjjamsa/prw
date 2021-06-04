@@ -1,5 +1,10 @@
 SHELL := /bin/bash
 
+# for intel devcould
+CC = icx
+CFLAGS_GPU_ICX = -fiopenmp -fopenmp-targets=spir64 -D__STRICT_ANSI__ -g -O2
+CFLAGS_CPU_ICX = -fiopenmp  -D__STRICT_ANSI__ -g -O2
+
 
 # for MI100
 CFLAGS_CPU_CLANG_AOMP=-O3 -fopenmp=libiomp5 -L/opt/rocm/llvm/lib/ -Wl,-rpath,$(LIB_OMP_DIR)
@@ -41,10 +46,11 @@ GPU_ARCH=sm_60
 
 # on triton
 # module purge; module load llvm/11.0.1-cuda-python3 
-CC=clang
+#CC=clang
 
 
-
+# for intel devcould
+CC=icx
 
 
 
@@ -60,6 +66,10 @@ endif
 ifeq ($(CC),nvcc)
 	CFLAGS_GPU=$(CFLAGS_GPU_NVCC)
 	CFLAGS_CPU=$(CFLAGS_CPU_NVCC)
+endif
+ifeq ($(CC),icx)
+	CFLAGS_GPU=$(CFLAGS_GPU_ICX)
+	CFLAGS_CPU=$(CFLAGS_CPU_ICX)
 endif
 
 
@@ -98,3 +108,6 @@ scalingTest: parallel_random_walk parallel_random_walk.cpu
 	time ./parallel_random_walk.cpu 10240000  320000 80000 > cpu.10240000.txt
 	time ./parallel_random_walk     102400000 320000 80000 > gpu.102400000.txt
 	time ./parallel_random_walk.cpu 102400000 320000 80000 > cpu.102400000.txt
+
+clean:
+	rm -vf *.o rm parallel_random_walk parallel_random_walk.cpu
