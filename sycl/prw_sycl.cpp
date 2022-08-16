@@ -89,7 +89,7 @@ int main(int argv, char **argc){
   int nsteps, d_nsteps;
   int i, imark,istep;
 
-  nMarks = 10;
+  nMarks = 1000000;
   gridSize = 500;
   nsteps = 10000;
   d_nsteps = 20;
@@ -109,10 +109,10 @@ int main(int argv, char **argc){
         stepMarker( &(markers[imark]), grid, gridSize );
     }
     markers[imark].integral /= (float) markers[imark].stopAt;
-    printMarker(markers[imark]);
   }
 
-  for(i=0; i<nMarks; ++i){
+  for(imark=0; imark<nMarks; imark+=19331){
+    printMarker(markers[imark]);
   }
 
   
