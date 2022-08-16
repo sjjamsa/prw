@@ -96,7 +96,7 @@ int parse_arguments( int argc, char *argv[], int *gridsize, int *nsteps, int *d_
   if(argc >= 3 ){
     *nsteps =  strtol(argv[2],&endptr,10);
     if(errno == EINVAL || *nsteps <= 0 ){
-      printf("Interpreting '%s' as %d, which is not reasonable gridsize.\n", argv[2], *nsteps);
+      printf("Interpreting '%s' as %d, which is not reasonable numbero of steps.\n", argv[2], *nsteps);
       return 2;
     }
   } else {
@@ -106,7 +106,7 @@ int parse_arguments( int argc, char *argv[], int *gridsize, int *nsteps, int *d_
   if(argc >= 4 ){
     *d_nsteps =  strtol(argv[3],&endptr,10);
     if(errno == EINVAL || *d_nsteps < 0 ){
-      printf("Interpreting '%s' as %d, which is not reasonable variability of steps.\n", argv[3], *nsteps);
+      printf("Interpreting '%s' as %d, which is not reasonable variability of steps.\n", argv[3], *d_nsteps);
       return 3;
     }
   } else {
