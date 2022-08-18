@@ -3,7 +3,7 @@
 
 # Equivivalent openmp: ../parallel_random_walk 500 10000 20
 
-CPP=icpx -fsycl
+CPP=icpx -fsycl -g -O2
 
 prw_sycl : prw_sycl.o
 	${CPP} $^ -o $@

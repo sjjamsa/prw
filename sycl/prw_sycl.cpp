@@ -63,6 +63,7 @@ int initField(int gridSize, float *grid){
 }
 
 
+//SYCL_EXTERNAL 
 int stepMarker(mrk_t *marker, float *grid, int gridsize){
   //marker->location = (int) pcg32_boundedrand_r( &(marker->rng), gridsize);
   //marker->location = std::uniform_int_distribution
@@ -71,45 +72,73 @@ int stepMarker(mrk_t *marker, float *grid, int gridsize){
   return 0;
 }
 
+class simple_test;
 
 int main(int argv, char **argc){
 
   // selector to choose the accelerator
   cl::sycl::default_selector device_selector;
 
-  // accelerator job queue.
-  cl::sycl::queue queue(device_selector);
-
-  std::cout   << "   prw_sycl running on "
-              << queue.get_device().get_info<cl::sycl::info::device::name>()
-              << std::endl;
 
 
   int nMarks, gridSize;
   int nsteps, d_nsteps;
-  int i, imark,istep;
+  int i, imark;
 
   nMarks = 1000000;
   gridSize = 500;
   nsteps = 10000;
   d_nsteps = 20;
   
-  //markers = (mrk_t *) malloc( nMarks * sizeof(mrk_t));
   mrk *markers = new mrk[nMarks];
-  //grid    = (float *) malloc( gridsize * sizeof(float));
   float *grid  = new float[gridSize];
 
 
   initField(gridSize, grid);
   initMarkers(markers, nMarks, nsteps, d_nsteps);
 
+  {  // SYCL SCOPE
+    // accelerator job queue.
+    cl::sycl::queue queue(device_selector);
 
-  for(imark=0; imark<nMarks; ++imark){
-    for(istep=0; istep<markers[imark].stopAt; ++istep){
-        stepMarker( &(markers[imark]), grid, gridSize );
-    }
-    markers[imark].integral /= (float) markers[imark].stopAt;
-  }
+    std::cout   << "   prw_sycl running on "
+                << queue.get_device().get_info<cl::sycl::info::device::name>()
+                << std::endl;
+
+
+    //                                dimensions=1
+    cl::sycl::buffer<float, 1> grid_buff(grid, cl::sycl::range<1>(gridSize));
+    cl::sycl::buffer<mrk, 1> markers_buff(markers, cl::sycl::range<1>(nMarks));
+    
+    
+    queue.submit([&](sycl::handler& cgh)
+    {
+
+      // Transfer data
+      auto grid_acc   =   grid_buff.get_access<cl::sycl::access::mode::read>(cgh);
+      auto markers_acc=markers_buff.get_access<cl::sycl::access::mode::read_write>(cgh);
+      //, mrk, 1,  cl::sycl::access::target::constant_buffer>();
+
+
+      // device code here
+
+      cgh.parallel_for<class simple_test>(sycl::range<1>(nMarks), [=](sycl::id<1> idx)
+      {  
+        int istep;
+        
+        for(istep=0; istep < markers_acc[idx[0]].stopAt; ++istep){
+          //  stepMarker( &(markers_acc[idx[0]]), &grid_acc, gridSize );  
+          markers_acc[idx[0]].location   = (int)  markers_acc[idx[0]].rng(gridSize);
+          markers_acc[idx[0]].integral += grid_acc[markers_acc[idx[0]].location];
+    
+        }
+      
+        markers_acc[idx[0]].integral /= (float) markers_acc[idx[0]].stopAt;
+      });
+      
+    });  // End of device code
+
+  } // End of SYCL scope
 
   for(imark=0; imark<nMarks; imark+=19331){
     printMarker(markers[imark]);
