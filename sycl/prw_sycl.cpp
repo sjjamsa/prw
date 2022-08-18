@@ -78,6 +78,7 @@ int main(int argv, char **argc){
 
   // selector to choose the accelerator
   cl::sycl::default_selector device_selector;
+  //cl::sycl::cpu_selector device_selector;
 
 
 
@@ -125,15 +126,17 @@ int main(int argv, char **argc){
       cgh.parallel_for<class simple_test>(sycl::range<1>(nMarks), [=](sycl::id<1> idx)
       {  
         int istep;
-        
-        for(istep=0; istep < markers_acc[idx[0]].stopAt; ++istep){
-          //  stepMarker( &(markers_acc[idx[0]]), &grid_acc, gridSize );  
-          markers_acc[idx[0]].location   = (int)  markers_acc[idx[0]].rng(gridSize);
-          markers_acc[idx[0]].integral += grid_acc[markers_acc[idx[0]].location];
-    
+        mrk marker = markers_acc[idx[0]];
+        float *grid_local = grid_acc.get_pointer();
+
+        for(istep=0; istep < marker.stopAt; ++istep){
+
+          stepMarker( &marker, grid_local, gridSize );
+
         }
       
-        markers_acc[idx[0]].integral /= (float) markers_acc[idx[0]].stopAt;
+        marker.integral /= (float) marker.stopAt;
+        markers_acc[idx[0]] = marker;
       });
       
     });  // End of device code
