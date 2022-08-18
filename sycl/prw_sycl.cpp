@@ -17,6 +17,55 @@ struct mrk{
 };
 typedef struct mrk mrk_t;
 
+
+int parse_arguments( int argc, char *argv[], int *gridsize, int *nsteps, int *d_nsteps, bool &cpu){
+
+  char *endptr;
+  
+  /* Get the gridsize as input */
+  if(argc >= 2 ){
+    *gridsize = strtol(argv[1],&endptr,10);
+    if(errno == EINVAL || *gridsize <= 0 ){
+      printf("Interpreting '%s' as %d, which is not reasonable gridsize.\n", argv[1], *gridsize);
+      return 1;
+    }
+  }
+
+  /* Get the number of steps and its variability as input */
+  if(argc >= 3 ){
+    *nsteps =  strtol(argv[2],&endptr,10);
+    if(errno == EINVAL || *nsteps <= 0 ){
+      printf("Interpreting '%s' as %d, which is not reasonable numbero of steps.\n", argv[2], *nsteps);
+      return 2;
+    }
+  }
+
+  if(argc >= 4 ){
+    *d_nsteps =  strtol(argv[3],&endptr,10);
+    if(errno == EINVAL || *d_nsteps < 0 ){
+      printf("Interpreting '%s' as %d, which is not reasonable variability of steps.\n", argv[3], *d_nsteps);
+      return 3;
+    }
+  }
+
+  if(argc >= 5 ){
+    cpu = false;
+    if        ( !strcasecmp(argv[4],"cpu") ) {
+      cpu = true;
+
+    } else if ( !strcasecmp(argv[4],"gpu") ) {
+      cpu = false;
+    } else {
+      printf("The 4th parameter '%s' is not 'cpu' or 'gpu'.\n", argv[4]);
+      return 4;
+    }
+  }
+  
+
+  return 0;
+}
+
+
 int printMarker(mrk_t marker){
   if ( fabs(marker.integral - 1.000 ) < TOLERANCE ) {
     printf("M%05d: @%06d by tm%04d:th%04d s%d integral %f\n",
@@ -74,33 +123,54 @@ int stepMarker(mrk_t *marker, float *grid, int gridsize){
 
 class simple_test;
 
-int main(int argv, char **argc){
+int main(int argc, char **argv){
 
-  // selector to choose the accelerator
-  cl::sycl::default_selector device_selector;
-  //cl::sycl::cpu_selector device_selector;
+
 
 
 
   int nMarks, gridSize;
   int nsteps, d_nsteps;
-  int i, imark;
+  int i, imark, retval;
+  bool cpu;
 
   nMarks = 1000000;
   gridSize = 500;
   nsteps = 10000;
   d_nsteps = 20;
-  
+  cpu = false;
+
+  retval = parse_arguments( argc, argv, &gridSize, &nsteps, &d_nsteps, cpu);
+  if (retval > 0){
+    return retval;
+  }
+
+
   mrk *markers = new mrk[nMarks];
   float *grid  = new float[gridSize];
+
+  std::cout << "Markers:" << nMarks << " Steps:" << nsteps <<  "pm" << d_nsteps << " Gridsize " << gridSize << std::endl;
 
 
   initField(gridSize, grid);
   initMarkers(markers, nMarks, nsteps, d_nsteps);
 
   {  // SYCL SCOPE
-    // accelerator job queue.
-    cl::sycl::queue queue(device_selector);
+
+    // accelerator job queue
+    cl::sycl::queue queue;
+    
+  
+    // selector to choose the accelerator
+    if (cpu) { 
+      cl::sycl::cpu_selector device_selector;
+      queue = cl::sycl::queue(device_selector);
+    } else {
+      cl::sycl::default_selector device_selector;
+      queue = cl::sycl::queue(device_selector);
+    }
+
+
 
     std::cout   << "   prw_sycl running on "
                 << queue.get_device().get_info<cl::sycl::info::device::name>()
@@ -122,8 +192,7 @@ int main(int argv, char **argc){
 
 
       // device code here
-
-      cgh.parallel_for<class simple_test>(sycl::range<1>(nMarks), [=](sycl::id<1> idx)
+      cgh.parallel_for<class simple_test>(sycl::range<1>(markers_acc.get_size()), [=](sycl::id<1> idx)
       {  
         int istep;
         mrk marker = markers_acc[idx[0]];
