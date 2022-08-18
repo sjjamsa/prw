@@ -192,7 +192,7 @@ int main(int argc, char **argv){
 
 
       // device code here
-      cgh.parallel_for<class simple_test>(sycl::range<1>(markers_acc.get_size()), [=](sycl::id<1> idx)
+      cgh.parallel_for<class simple_test>(sycl::range<1>(nMarks), [=](sycl::id<1> idx)
       {  
         int istep;
         mrk marker = markers_acc[idx[0]];
