@@ -1,3 +1,6 @@
+#
+#  Notes for Intel ONE api.
+#
 # Remember to enable oneapi, eg:
 # source /opt/intel/oneapi/setvars.sh
 
@@ -20,6 +23,10 @@
 
 # Equivivalent openmp: ../parallel_random_walk 500 10000 20
 
+#for mi100 on triton
+CPP=/opt/hipSYCL/bin/syclcc -O2 --hipsycl-platform=rocm --hipsycl-gpu-arch=gfx908
+
+#for intel one-api
 CPP=icpx -fsycl -g -O2
 
 prw_sycl : prw_sycl.o
@@ -31,14 +38,14 @@ prw_sycl.o : prw_sycl.cpp
 
 scalingTest: prw_sycl
 	time ./$^ 1024      320000 80000 gpu > gpu.1024.txt
-	time ./$^ 1024      320000 80000 cpu > cpu.1024.txt
 	time ./$^ 10240     320000 80000 gpu > gpu.10240.txt
-	time ./$^ 10240     320000 80000 cpu > cpu.10240.txt
 	time ./$^ 102400    320000 80000 gpu > gpu.102400.txt
-	time ./$^ 102400    320000 80000 cpu > cpu.102400.txt
 	time ./$^ 1024000   320000 80000 gpu > gpu.1024000.txt
-	time ./$^ 1024000   320000 80000 cpu > cpu.1024000.txt
 	time ./$^ 10240000  320000 80000 gpu > gpu.10240000.txt
-	time ./$^ 10240000  320000 80000 cpu > cpu.10240000.txt
 	time ./$^ 102400000 320000 80000 gpu > gpu.102400000.txt
+	time ./$^ 1024      320000 80000 cpu > cpu.1024.txt
+	time ./$^ 10240     320000 80000 cpu > cpu.10240.txt
+	time ./$^ 102400    320000 80000 cpu > cpu.102400.txt
+	time ./$^ 1024000   320000 80000 cpu > cpu.1024000.txt
+	time ./$^ 10240000  320000 80000 cpu > cpu.10240000.txt
 	time ./$^ 102400000 320000 80000 cpu > cpu.102400000.txt
