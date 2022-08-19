@@ -182,7 +182,7 @@ int main(int argc, char **argv){
     cl::sycl::buffer<mrk, 1> markers_buff(markers, cl::sycl::range<1>(nMarks));
     
     
-    queue.submit([&](sycl::handler& cgh)
+    queue.submit([&](cl::sycl::handler& cgh)
     {
 
       // Transfer data
@@ -192,7 +192,7 @@ int main(int argc, char **argv){
 
 
       // device code here
-      cgh.parallel_for<class simple_test>(sycl::range<1>(nMarks), [=](sycl::id<1> idx)
+      cgh.parallel_for<class simple_test>(cl::sycl::range<1>(nMarks), [=](cl::sycl::id<1> idx)
       {  
         int istep;
         mrk marker = markers_acc[idx[0]];
