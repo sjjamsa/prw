@@ -1,18 +1,25 @@
 
 CFLAGS_CPU_CLANG=-O3 -fopenmp=libiomp5 -L/opt/rocm/llvm/lib/ -Wl,-rpath,$(LIB_OMP_DIR)
-CFLAGS_GPU_CLANG=-O3 -target $(AOMP_CPUTARGET) -fopenmp -fopenmp-version=50 -fopenmp-targets=$(AOMP_GPUTARGET) -Xopenmp-target=$(AOMP_GPUTARGET) -march=$(AOMP_GPU) -Wall
+CFLAGS_GPU_CLANG=-O3 \
+	-fopenmp \
+	-fopenmp-targets=$(AOMP_GPUTARGET) \
+	-Xopenmp-target=$(AOMP_GPUTARGET) \
+	-march=$(AOMP_GPU) -Wall
 
+#mi100
 AOMP_GPUTARGET=amdgcn-amd-amdhsa
 AOMP_CPUTARGET=x86_64-pc-linux-gnu
 AOMP_GPU=gfx908
 
+#mi250
 
-LLVM_DIR=/opt/rocm/llvm
+AOMP_GPUTARGET=amdgcn-amd-amdhsa
+AOMP_CPUTARGET=amdgcn-amd-amdhsa
+AOMP_GPU=gfx90a
 
-LIB_OMP_DIR=$(LLVM_DIR)/lib/
+#module load rocm
+CC=amdclang
 
-CC=$(LLVM_DIR)/bin/clang
-#CC=clang-ocl
 
 CFLAGS_GPU=$(CFLAGS_GPU_CLANG)
 CFLAGS_CPU=$(CFLAGS_CPU_CLANG)
