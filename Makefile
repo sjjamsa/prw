@@ -1,24 +1,9 @@
-
-CFLAGS_CPU_CLANG=-O3 -fopenmp=libiomp5 -L/opt/rocm/llvm/lib/ -Wl,-rpath,$(LIB_OMP_DIR)
-CFLAGS_GPU_CLANG=-O3 \
-	-fopenmp \
-	-fopenmp-targets=$(AOMP_GPUTARGET) \
-	-Xopenmp-target=$(AOMP_GPUTARGET) \
-	-march=$(AOMP_GPU) -Wall
-
-#mi100
-AOMP_GPUTARGET=amdgcn-amd-amdhsa
-AOMP_CPUTARGET=x86_64-pc-linux-gnu
-AOMP_GPU=gfx908
-
-#mi250
-
-AOMP_GPUTARGET=amdgcn-amd-amdhsa
-AOMP_CPUTARGET=amdgcn-amd-amdhsa
-AOMP_GPU=gfx90a
-
+#module load CrayEnv
+#module load PrgEnv-cray
+#module load craype-accel-amd-gfx90a
 #module load rocm
-CC=amdclang
+
+CC=cc -fopenmp -O3
 
 
 CFLAGS_GPU=$(CFLAGS_GPU_CLANG)
