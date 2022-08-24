@@ -147,9 +147,9 @@ int main( int argc, char *argv[] ){
     }
 
 #ifdef USE_ATOMIC
-    #pragma omp target teams distribute parallel for  shared(nFinished) 
+    #pragma omp target teams distribute parallel for  shared(nFinished) num_teams(440) num_threads(256)
 #else
-    #pragma omp target teams distribute parallel for
+    #pragma omp target teams distribute parallel for num_teams(440) num_threads(256)
 #endif
     for(i=0;i<nMarks;i++){
 
