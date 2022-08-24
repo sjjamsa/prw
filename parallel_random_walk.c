@@ -85,9 +85,11 @@ int main( int argc, char *argv[] ){
 
   struct timespec  wc_begin,wc_end,cpu_begin,cpu_end;
 
+ #ifdef USE_ATOMIC
   int *nFinished; /* This variable is here to test atomic/critical pragmas */
   int N;
-
+ #endif
+  
   /* Get the gridsize as input */
   if(argc >= 2 ){
     gridsize = atoi(argv[1]);
@@ -108,16 +110,22 @@ int main( int argc, char *argv[] ){
   initMarkers(markers,nMarks);
   initField(gridsize,grid);
 
+#ifdef USE_ATOMIC
   nFinished = &N;
   *nFinished = -1; /* Just mark this with something non-default*/
   printf("Finished %d/%d markers.\n",*nFinished,nMarks);
-
+#endif
+  
   clock_gettime( CLOCK_REALTIME,           &wc_begin  );
   clock_gettime( CLOCK_PROCESS_CPUTIME_ID, &cpu_begin );
 
   /*Move all the data to the target on one go*/
   
+#ifdef USE_ATOMIC
   #pragma omp target data map(tofrom:markers[0:nMarks]) map(to:grid[0:gridsize]) map(tofrom:nFinished[0:1])
+#else
+  #pragma omp target data map(tofrom:markers[0:nMarks]) map(to:grid[0:gridsize])
+#endif
   {
 
     /*
@@ -132,11 +140,17 @@ int main( int argc, char *argv[] ){
 
     #pragma omp target
     {
+#ifdef USE_ATOMIC
     #pragma omp atomic write
     (*nFinished) = 0;   /* Test the atomic save.*/
+#endif
     }
- 
+
+#ifdef USE_ATOMIC
     #pragma omp target teams distribute parallel for  shared(nFinished) 
+#else
+    #pragma omp target teams distribute parallel for
+#endif
     for(i=0;i<nMarks;i++){
 
       if(i==0){
@@ -158,9 +172,11 @@ int main( int argc, char *argv[] ){
       /* Scale the integral by number of steps */
       markers[i].integral /= (float)NSTEPS;
 
+#ifdef USE_ATOMIC
     #pragma omp atomic update
       (*nFinished)++;
       /* printf("i=%5d ready=%5d\n",i,*nFinished); */
+#endif
     }
     /* printf("** i=----- ready=%5d **\n",*nFinished); */
   }
@@ -168,8 +184,10 @@ int main( int argc, char *argv[] ){
   clock_gettime( CLOCK_REALTIME,           &wc_end  );
   clock_gettime( CLOCK_PROCESS_CPUTIME_ID, &cpu_end );
     
+#ifdef USE_ATOMIC
   printf("Finished %d/%d markers.\n",*nFinished,nMarks);
-
+#endif
+  
   printf("Wall clock time: %lf s\n",  (double) ( wc_end.tv_sec- wc_begin.tv_sec) + ((double) ( wc_end.tv_nsec- wc_begin.tv_nsec ))*1.0e-9 ); 
   printf("       CPU time: %lf s\n",  (double) (cpu_end.tv_sec-cpu_begin.tv_sec) + ((double) (cpu_end.tv_nsec-cpu_begin.tv_nsec ))*1.0e-9 ); 
   
