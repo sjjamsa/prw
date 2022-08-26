@@ -20,7 +20,18 @@
 
 # Equivivalent openmp: ../parallel_random_walk 500 10000 20
 
-CPP=icpx -fsycl -g -O2
+# https://www.intel.com/content/www/us/en/developer/articles/technical/compiling-sycl-with-different-gpus.html
+# https://github.com/intel/llvm/issues/5943 "make sycl-toolchain"
+# https://github.com/pytorch/pytorch/issues/63480  missing libtinfo.so.6 >>>> module load ncurses/6.2
+
+# cd to the build dir
+# export DPCPP_HIP_COMPILER_ROOTDIR=$PWD/llvm/build
+# export PATH=$DPCPP_HIP_COMPILER_ROOTDIR/bin:$PATH
+# export LD_LIBRARY_PATH=$DPCPP_HIP_COMPILER_ROOTDIR/lib:$LD_LIBRARY_PATH
+
+
+
+CPP=clang++ -fsycl -fsycl-targets=amdgcn-amd-amdhsa -Xsycl-target-backend=amdgcn-amd-amdhsa --offload-arch=gfx906 
 
 prw_sycl : prw_sycl.o
 	${CPP} $^ -o $@
