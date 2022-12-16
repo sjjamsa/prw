@@ -1,10 +1,12 @@
-
 CFLAGS_CPU_CLANG=-O3 -fopenmp=libiomp5 -L/opt/rocm/llvm/lib/ -Wl,-rpath,$(LIB_OMP_DIR)
 CFLAGS_GPU_CLANG=-O3 \
 	-fopenmp \
 	-fopenmp-targets=$(AOMP_GPUTARGET) \
 	-Xopenmp-target=$(AOMP_GPUTARGET) \
-	-march=$(AOMP_GPU) -Wall
+	-march=$(AOMP_GPU) -Wall \
+	-Wl,-rpath,$(LIB_OMP_DIR)
+
+LIB_OMP_DIR=/opt/rocm/llvm/lib/
 
 #mi100
 AOMP_GPUTARGET=amdgcn-amd-amdhsa
@@ -20,6 +22,7 @@ AOMP_GPU=gfx90a
 #module load rocm
 CC=amdclang
 
+# >>> CRAY_ACC_DEBUG=2 <<<
 
 CFLAGS_GPU=$(CFLAGS_GPU_CLANG)
 CFLAGS_CPU=$(CFLAGS_CPU_CLANG)
@@ -60,3 +63,6 @@ scalingTest: parallel_random_walk parallel_random_walk.cpu
 	time ./parallel_random_walk.cpu 10240000 > cpu.10240000.txt  
 	time ./parallel_random_walk     102400000 > gpu.102400000.txt 
 	time ./parallel_random_walk.cpu 102400000 > cpu.102400000.txt  
+
+clean:
+	rm -vf parallel_random_walk *.o

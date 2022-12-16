@@ -15,12 +15,13 @@
 
 #SBATCH --gpus-per-task=1
 
-
+module load rocm
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK #
 
 
 export MPICH_GPU_SUPPORT_ENABLED=1 #
+
 
 
 date
