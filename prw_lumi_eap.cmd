@@ -15,7 +15,11 @@
 
 #SBATCH --gpus-per-task=1
 
+
+module load PrgEnv-cray
 module load rocm
+module load craype-accel-amd-gfx90a
+
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK #
 
