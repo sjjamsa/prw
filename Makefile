@@ -1,8 +1,7 @@
 # On lumi-G:
 
 
-# module load PrgEnv-cray
-# module load rocm
+# module load PrgEnv-amd
 # module load craype-accel-amd-gfx90a
 
 CC=cc
