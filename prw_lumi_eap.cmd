@@ -29,5 +29,5 @@ export MPICH_GPU_SUPPORT_ENABLED=1 #
 
 
 date
-time srun ./parallel_random_walk 1024000   320000 0
+time srun ./parallel_random_walk 1024   3200 0
 date

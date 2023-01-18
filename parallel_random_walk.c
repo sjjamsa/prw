@@ -13,6 +13,8 @@
 #define D_NSTEPS  0
 #define NMARKERS  1000000
 
+#define THREAD_LIMIT 220
+
 #define TOLERANCE 0.01
 
 struct mrk{
@@ -207,9 +209,9 @@ int main( int argc, char *argv[] ){
     }
 
 #ifdef USE_ATOMIC
-    #pragma omp target teams distribute parallel for  shared(nFinished) 
+    #pragma omp target teams distribute parallel for shared(nFinished)  thread_limit(THREAD_LIMIT)
 #else
-    #pragma omp target teams distribute parallel for
+    #pragma omp target teams distribute parallel for thread_limit(THREAD_LIMIT)
 #endif
     for(i=0;i<nMarks;i++){
 
@@ -254,7 +256,7 @@ int main( int argc, char *argv[] ){
     if ( markers[i].thread > maxThread) maxThread =  markers[i].thread;
   }
 
-  printf("Teams %d Threads %d\n", maxTeam+1, maxThread+1);
+  printf("Teams %d Threads %d thread_limit %d\n", maxTeam+1, maxThread+1, THREAD_LIMIT);
 
   return 0;
 }
