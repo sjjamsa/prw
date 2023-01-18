@@ -140,6 +140,8 @@ int main( int argc, char *argv[] ){
 #endif
   int N;
 
+  int initialDevice[1];
+
   resval =  parse_arguments( argc, argv, &gridsize, &nsteps, &d_nsteps);
   if(resval != 0) {
     return resval;
@@ -182,6 +184,19 @@ int main( int argc, char *argv[] ){
    
     */
 
+#pragma omp target map(from:initialDevice[0:1])
+    {
+      initialDevice[0] = omp_is_initial_device();
+    }
+
+    if ( initialDevice[0]  ) {
+      printf("Running on host\n");
+    }
+    else {
+      printf("Running on target\n");
+    }
+    fflush(stdout);
+
 
     #pragma omp target
     {
@@ -198,14 +213,6 @@ int main( int argc, char *argv[] ){
 #endif
     for(i=0;i<nMarks;i++){
 
-      if(i==0){
-	if ( omp_is_initial_device() ) {
-	  printf("Running on host (ottdpf)\n");
-	}
-	else {
-	  printf("Running on target (ottdpf)\n");
-	}
-      }
 
       markers[i].thread = omp_get_thread_num();
       markers[i].team   = omp_get_team_num();
